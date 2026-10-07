@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heat Pump Toolbox v4.1</title>
+<style>
+body {
+    margin: 0;
+    font-family: Segoe UI, Arial, sans-serif;
+    background: #eef2f7;
+    color: #1f2937;
+}
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+.header {
+    background: linear-gradient(135deg, #0056a4, #1976d2);
+    color: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.header-info h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+}
+.header-info p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+.meta-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 8px;
+    font-weight: 600;
+}
+.btn-print-main {
+    background: #ffffff;
+    color: #0056a4;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: background 0.2s;
+}
+.btn-print-main:hover {
+    background: #f1f5f9;
+}
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+.tabbtn {
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #dbeafe;
+    font-weight: 600;
+    color: #1e3a8a;
+}
+.tabbtn.active {
+    background: #0056a4;
+    color: #fff;
+}
+.tab {
+    display: none;
+}
+.tab.active {
+    display: block;
+}
+.card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.08);
+}
+label {
+    display: block;
+    font-weight: 600;
+    margin-top: 14px;
+}
+small {
+    display: block;
+    color: #64748b;
+    margin: 4px 0 10px;
+}
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+.result {
+    background: #f8fafc;
+    border-left: 5px solid #0056a4;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+.value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0056a4;
+}
+.ok {
+    background: #dcfce7;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #166534;
+}
+.warn {
+    background: #fee2e2;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #991b1b;
+}
+.note {
+    background: #fffbeb;
+    padding: 15px;
+    border-left: 5px solid #f59e0b;
+    border-radius: 8px;
+    margin-top: 20px;
+    line-height: 1.6;
+}
+.actions button {
+    background: #0056a4;
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+/* Modal Okno pro Tisk */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #fff;
+    padding: 28px;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.modal-content h3 {
+    margin-top: 0;
+    color: #0056a4;
+}
+.print-list {
+    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.print-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.print-item input {
+    width: auto;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.btn-modal {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-cancel { background: #e2e8f0; color: #334155; }
+.btn-confirm { background: #0056a4; color: #fff; }
+
+/* TISKOVÝ STYL (PDF export) */
+@media print {
+    body { background: #fff; color: #000; font-size: 12pt; }
+    .container { max-width: 100%; padding: 0; }
+    .header-btn, .tabs, .actions, .modal-overlay, small { display: none !important; }
+    .header { background: none; color: #000; border-bottom: 2px solid #0056a4; padding: 0 0 15px 0; border-radius: 0; }
+    .header h1 { color: #0056a4; }
+    .meta-tag { border: 1px solid #cbd5e1; color: #334155; background: none; }
+    .card { box-shadow: none; padding: 0; margin-bottom: 30px; page-break-inside: avoid; }
+    .tab { display: none !important; }
+    .tab.print-show { display: block !important; }
+    input, select { border: none; background: none; padding: 0; font-weight: bold; font-size: 12pt; appearance: none; }
+    .result { border-left: 3px solid #0056a4; background: #f8fafc; }
+    .value { font-size: 20pt; }
+    .note { border-left: 3px solid #f59e0b; background: #fffbeb; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-info">
+            <h1>Heat Pump Toolbox</h1>
+            <p>Technické návrhové a kontrolní kalkulačky pro tepelná čerpadla</p>
+            <div class="meta-tag">Verze 4.1 | Autor: LH | Aktualizováno: 10/2026</div>
+        </div>
+        <div class="header-btn">
+            <button class="btn-print-main" onclick="openPrintModal()">🖨️ Vytisknout / Exportovat PDF</button>
+        </div>
+    </div>
+
+    <!-- Záložky -->
+    <div class="tabs">
+        <button class="tabbtn active" onclick="showTab('coil',this)">Výměník TV</button>
+        <button class="tabbtn" onclick="showTab('bd_tank',this)">Zásobník TV (BD)</button>
+        <button class="tabbtn" onclick="showTab('rd_tank',this)">Zásobník TV (RD)</button>
+        <button class="tabbtn" onclick="showTab('pipe',this)">Potrubí</button>
+        <button class="tabbtn" onclick="showTab('hyd',this)">Výkon ↔ Průtok ↔ ΔT</button>
+        <button class="tabbtn" onclick="showTab('buf',this)">Akumulační nádoba</button>
+        <button class="tabbtn" onclick="showTab('casc',this)">Kaskáda TČ</button>
+    </div>
+
+    <!-- 1. Výměník TV -->
+    <div id="coil" class="tab active">
+        <div class="card">
+            <h2>Dimenzování výměníku TV</h2>
+            <label>Výkon tepelného čerpadla [kW]</label>
+            <input id="hpPower" type="number" value="30">
+            <small>Jmenovitý výkon tepelného čerpadla.</small>
+            <label>Plocha výměníku zásobníku [m²]</label>
+            <input id="coilSurface" type="number" value="5">
+            <small>Aktivní plocha teplosměnné spirály.</small>
+            
+            <div class="result">Minimální požadovaná plocha<div id="minSurface" class="value"></div></div>
+            <div class="result">Maximální doporučený výkon<div id="maxPower" class="value"></div></div>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <!-- 2. Návrh zásobníků TV pro BD -->
+    <div id="bd_tank" class="tab">
+        <div class="card">
+            <h2>Návrh zásobníků TV pro bytový dům</h2>
+            <p style="color:#64748b; margin-top:-5px;">Metodika pro bytové domy s přímým doříváním během odběrové špičky</p>
+
+            <label>Počet bytů</label>
+            <input type="number" id="bd_apartments" value="20" min="1">
+
+            <label>Požadovaný komfort</label>
+            <select id="bd_comfort">
+                <option value="70">Úsporný (70 l/byt/den)</option>
+                <option value="100" selected>Standard (100 l/byt/den)</option>
+                <option value="140">Komfort (140 l/byt/den)</option>
+            </select>
+
+            <label>Rezerva na odběrovou špičku</label>
+            <select id="bd_peakReserve">
+                <option value="20">20 %</option>
+                <option value="30" selected>30 %</option>
+                <option value="40">40 %</option>
+                <option value="50">50 %</option>
+                <option value="60">60 %</option>
+            </select>
+
+            <label>Rezerva na cirkulaci</label>
+            <select id="bd_circulationReserve">
+                <option value="10">10 %</option>
+                <option value="15" selected>15 %</option>
+                <option value="20">20 %</option>
+                <option value="25">25 %</option>
+                <option value="30">30 %</option>
+                <option value="35">35 %</option>
+                <option value="40">40 %</option>
+            </select>
+
+            <label>Výkon ohřevu zásobníku TV [kW]</label>
+            <input type="number" id="bd_heatingPower" value="20" min="0" step="1">
+            <small>Dostupný výkon zdroje / výměníku pro ohřev TV. Při 0 kW se počítá plný statický objem.</small>
+
+            <label>Odběr ve špičce [%]</label>
+            <input type="number" id="bd_peakShare" value="80" min="10" max="100" step="5">
+            <small>Podíl celkové potřeby odebraný během špičky (uplatní se při výkonu > 0 kW).</small>
+
+            <label>Trvání špičky [h]</label>
+            <input type="number" id="bd_peakDuration" value="3" min="1" max="5" step="0.5">
+            <small>Doba trvání hlavní odběrové špičky v hodinách (1–5 h).</small>
+
+            <div class="result">
+                Základní denní potřeba TV
+                <div class="value" id="bd_baseNeed">0 l/den</div>
+            </div>
+
+            <div class="result">
+                Celkový celodenní objem s rezervami
+                <div class="value" id="bd_statVolume">0 l</div>
+            </div>
+
+            <div class="result">
+                Potřeba TV v odběrové špičce
+                <div class="value" id="bd_peakRequiredVolume" style="color:#334155;">0 l</div>
+            </div>
+
+            <div class="result">
+                Objem doohřátý zdrojem během špičky
+                <div class="value" id="bd_heatedVolume" style="color:#0284c7;">0 l</div>
+            </div>
+
+            <div class="result" style="border-left-color: #16a34a;">
+                Doporučený objem zásobníků TV
+                <div class="value" id="bd_tankVolume" style="color: #16a34a;">0 l</div>
+            </div>
+
+            <div class="note">
+                <b>Metodika:</b><br><br>
+                1. <b>Bez dořívání (Výkon = 0 kW):</b> Výsledný doporučený objem odpovídá plnému celodennímu objemu s rezervami.<br>
+                2. <b>S doříváním (Výkon > 0 kW):</b> Výpočet vychází ze zadaného % odběru ve špičce, od kterého se odečte objem vody, který zdroj stihne doohřát za dobu trvání špičky.
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Návrh zásobníku TV pro RD -->
+    <div id="rd_tank" class="tab">
+        <div class="card">
+            <h2>Návrh zásobníku TV pro RD</h2>
+            <p style="color:#64748b; margin-top:-5px;">První verze metodiky</p>
+
+            <label>Počet osob</label>
+            <input type="number" id="rd_persons" value="4" min="1">
+
+            <label>Počet sprch</label>
+            <input type="number" id="rd_showers" value="2" min="0">
+
+            <label>Počet van</label>
+            <input type="number" id="rd_baths" value="1" min="0">
+
+            <label>Komfort</label>
+            <select id="rd_comfort">
+                <option value="25">Úsporný (25 l/os/den)</option>
+                <option value="40" selected>Standard (40 l/os/den)</option>
+                <option value="70">Komfort (70 l/os/den)</option>
+            </select>
+
+            <div class="result">
+                Základní potřeba TV
+                <div class="value" id="rd_baseNeed">0 l/den</div>
+            </div>
+
+            <div class="result">
+                Denní potřeba TV po korekcích
+                <div class="value" id="rd_totalNeed">0 l/den</div>
+            </div>
+
+            <div class="result">
+                Objem zásobníku dle metodiky (80 % denní potřeby)
+                <div class="value" id="rd_tankCalc">0 l</div>
+            </div>
+
+            <div class="result">
+                Doporučený objem zásobníku
+                <div class="value" id="rd_tankSize">0 l</div>
+            </div>
+
+            <div class="note">
+                <b>Metodika</b><br>
+                Úsporný = 25 l/os/den<br>
+                Standard = 40 l/os/den<br>
+                Komfort = 70 l/os/den<br><br>
+                Každá sprcha = +10 % základní potřeby<br>
+                Každá vana = +30 % základní potřeby<br><br>
+                Denní potřeba TV = Základ + korekce sprch + korekce van<br><br>
+                Objem zásobníku dle metodiky = 80 % denní potřeby TV<br>
+                Minimální doporučený objem zásobníku = 200 l
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Potrubí -->
+    <div id="pipe" class="tab">
+        <div class="card">
+            <h2>Dimenzování potrubí</h2>
+            <label>Průtok topné vody [m³/h]</label>
+            <input id="flow" type="number" value="5">
+            <small>Objemový průtok v soustavě.</small>
+            <label>Teplotní spád ΔT [K]</label>
+            <input id="deltaT" type="number" value="5">
+            <small>Rozdíl teploty mezi přívodem a vratkou.</small>
+            <label>Rychlost proudění [m/s]</label>
+            <input id="velocity" type="number" value="1">
+            <small>Doporučená návrhová rychlost proudění.</small>
+            
+            <div class="result">Přenášený výkon<div id="systemPower" class="value"></div></div>
+            <div class="result">Vnitřní průměr<div id="pipeDiameter" class="value"></div></div>
+            <div class="result">Doporučená DN<div id="pipeDN" class="value"></div></div>
+        </div>
+    </div>
+
+    <!-- 5. Výkon / Průtok / ΔT -->
+    <div id="hyd" class="tab">
+        <div class="card">
+            <h2>Výkon ↔ Průtok ↔ ΔT</h2>
+            <label>Výkon [kW]</label>
+            <input id="calcPower" type="number" value="30">
+            <label>Průtok [m³/h]</label>
+            <input id="calcFlow" type="number" value="5.16">
+            <label>ΔT [K]</label>
+            <input id="calcDeltaT" type="number" value="5">
+            
+            <div class="actions" style="margin-top:15px">
+                <button onclick="calculateMissing('flow')">Spočítat průtok</button>
+                <button onclick="calculateMissing('power')">Spočítat výkon</button>
+                <button onclick="calculateMissing('dt')">Spočítat ΔT</button>
+            </div>
+            <div class="result"><div id="calcResult" class="value">Připraveno</div></div>
+            <div class="note">Vzorec: P = 1,163 × Q × ΔT</div>
+        </div>
+    </div>
+
+    <!-- 6. Akumulační nádoba (Samostatná jednotka) -->
+    <div id="buf" class="tab">
+        <div class="card">
+            <h2>Kontrola a návrh akumulační nádoby</h2>
+            <p style="color:#64748b; margin-top:-5px;">Metodika technické kontroly (anticyklování + defrost + bezpečnostní rezerva)</p>
+
+            <label>Jmenovitý výkon TČ [kW]</label>
+            <input id="bufferPower" type="number" value="12" step="0.5">
+            <small>Jmenovitý výkon tepelného čerpadla při A7/W35 nebo A2/W35.</small>
+
+            <label>Typ kompresoru</label>
+            <select id="bufferType">
+                <option value="inverter" selected>Inverter (plynulá modulace – 30 % jmenovitého výkonu)</option>
+                <option value="onoff">On / Off (konstantní výkon – 100 % jmenovitého výkonu)</option>
+            </select>
+
+            <label>Minimální požadovaný chod kompresoru [min]</label>
+            <input id="runtime" type="number" value="15">
+
+            <label>Spínací hystereze regulace ΔT [K]</label>
+            <input id="bufferDT" type="number" value="4" step="0.5">
+
+            <label>Navržený objem AKU v dokumentaci [l] (volitelné)</label>
+            <input id="projectedVolume" type="number" value="150" placeholder="Zadejte pro kontrolu projektu">
+
+            <div class="result">
+                Min. objem pro anticyklování (při nulovém odběru domu)
+                <div id="antiCycleVolume" class="value">0 l</div>
+            </div>
+
+            <div class="result">
+                Min. objem pro bezpečné odtávání (Defrost - 12 l/kW)
+                <div id="defrostVolume" class="value">0 l</div>
+            </div>
+
+            <div class="result" style="border-left-color: #16a34a;">
+                DOPORUČENÝ OBJM AKU (s 20% bezpečnostní rezervou)
+                <div id="recommendedBufferVolume" class="value" style="color: #16a34a;">0 l</div>
+            </div>
+
+            <div id="bufferStatus"></div>
+
+            <div class="note">
+                <b>Metodika technické kontroly:</b><br><br>
+                <b>1. Anticyklování:</b> Zajišťuje minimální dobu chodu kompresoru (15 min) v přechodném období při nulovém odběru tepla objektu.<br><br>
+                <b>2. Defrost:</b> Zajišťuje dostatek akumulované energie pro odtávání výparníku bez poklesu teploty v topném okruhu (normativní minimum 12 l / kW jmenovitého výkonu).<br><br>
+                <b>3. Bezpečnostní rezerva:</b> Výsledný doporučený objem vychází z vyšší z obou hodnot a je navýšen o <b>20 % bezpečnostní rezervy</b>.
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Akumulační nádoba pro KASKÁDU -->
+    <div id="casc" class="tab">
+        <div class="card">
+            <h2>Návrh akumulace pro KASKÁDU TČ</h2>
+            <p style="color:#64748b; margin-top:-5px;">Simulace dimenzování s pevným souběhem defrostu 60 %</p>
+
+            <label>Počet jednotek v kaskádě</label>
+            <input id="cascUnits" type="number" value="3" min="1" step="1">
+
+            <label>Jmenovitý výkon 1 jednotky [kW]</label>
+            <input id="cascPowerPerUnit" type="number" value="20" step="1">
+
+            <label>Typ kompresorů</label>
+            <select id="cascType">
+                <option value="inverter" selected>Inverter (min. modulace 30 %)</option>
+                <option value="onoff">On / Off (100 % výkonu)</option>
+            </select>
+
+            <label>Simulovaný scénář cyklování</label>
+            <select id="cascCycleScenario">
+                <option value="single_min" selected>Běží 1 jednotka na min. výkon (přechodné období)</option>
+                <option value="single_full">Běží 1 jednotka na 100 % výkonu</option>
+                <option value="step_change">Kaskádový krok (přírůstek 1 jednotky na min modulaci)</option>
+                <option value="all_full">Běží VŠECHNY jednotky na 100 % výkonu</option>
+            </select>
+
+            <label>Spínací hystereze ΔT [K]</label>
+            <input id="cascDT" type="number" value="4" step="0.5">
+
+            <label>Požadovaný min. chod kompresoru [min]</label>
+            <input id="cascRuntime" type="number" value="15">
+
+            <label>Koeficient odtávání [l/kW uvažovaného výkonu pro defrost]</label>
+            <input id="cascDefrostFactor" type="number" value="12" step="1">
+
+            <label>Navržený objem AKU v dokumentaci [l] (volitelné)</label>
+            <input id="cascProjectedVolume" type="number" value="500" placeholder="Zadejte pro kontrolu">
+
+            <div class="result">
+                Celkový instalovaný výkon kaskády
+                <div id="cascTotalPower" class="value" style="font-size:22px; color:#334155;">0 kW</div>
+            </div>
+
+            <div class="result">
+                Uvažovaný výkon kaskády pro Defrost (60% souběh)
+                <div id="cascDefrostPower" class="value" style="font-size:22px; color:#0284c7;">0 kW</div>
+            </div>
+
+            <div class="result">
+                Min. objem pro anticyklování (dle scénáře)
+                <div id="cascAntiCycleVol" class="value">0 l</div>
+            </div>
+
+            <div class="result">
+                Min. objem pro Defrost (při 60% souběhu)
+                <div id="cascDefrostVol" class="value">0 l</div>
+            </div>
+
+            <div class="result" style="border-left-color: #16a34a;">
+                DOPORUČENÝ OBJM AKU KASKÁDY (+ 20 % rezerva)
+                <div id="cascRecommendedVol" class="value" style="color: #16a34a;">0 l</div>
+            </div>
+
+            <div id="cascStatus"></div>
+
+            <div class="note">
+                <b>Metodika kaskády:</b><br>
+                • <b>Odtávání (Defrost):</b> Elektronika každé jednotky odmrazuje nezávisle. Pro dimenzování se používá pevný koeficient souběhu **60 % celkového výkonu kaskády**.<br>
+                • <b>Cyklování:</b> Možnost simulace přebytku výkonu od nejmenší modulace jednoho stroje až po plný výkon kaskády.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog pro Výběr Tisku -->
+<div id="printModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>🖨️ Výběr záložek pro tisk do PDF</h3>
+        <p style="color:#64748b; font-size:14px;">Zaškrtněte části protokolu, které chcete zahrnout do výstupu:</p>
+        
+        <div class="print-list">
+            <label class="print-item"><input type="checkbox" value="coil"> 1. Výměník TV</label>
+            <label class="print-item"><input type="checkbox" value="bd_tank" checked> 2. Zásobník TV (Bytové domy)</label>
+            <label class="print-item"><input type="checkbox" value="rd_tank"> 3. Zásobník TV (Rodinné domy)</label>
+            <label class="print-item"><input type="checkbox" value="pipe"> 4. Dimenzování potrubí</label>
+            <label class="print-item"><input type="checkbox" value="hyd"> 5. Výkon ↔ Průtok ↔ ΔT</label>
+            <label class="print-item"><input type="checkbox" value="buf"> 6. Akumulační nádoba (Samostatná)</label>
+            <label class="print-item"><input type="checkbox" value="casc"> 7. Kaskáda TČ</label>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-modal btn-cancel" onclick="closePrintModal()">Zrušit</button>
+            <button class="btn-modal btn-confirm" onclick="executePrint()">Vytisknout / Uložit PDF</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(id, b) {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tabbtn').forEach(x => x.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    b.classList.add('active');
+}
+
+function fmt(n) {
+    return Number(n).toFixed(2).replace('.', ',');
+}
+
+function coil() {
+    const p = parseFloat(document.getElementById('hpPower').value) || 0;
+    const s = parseFloat(document.getElementById('coilSurface').value) || 0;
+    const m = p / 3.9;
+    document.getElementById('minSurface').innerHTML = fmt(m) + ' m²';
+    document.getElementById('maxPower').innerHTML = fmt(s * 3.9) + ' kW';
+    const st = document.getElementById('status');
+    if (s >= m) {
+        st.className = 'ok';
+        st.innerHTML = '✅ Výměník vyhovuje';
+    } else {
+        st.className = 'warn';
+        st.innerHTML = '❌ Výměník nevyhovuje';
+    }
+}
+
+function calculateBD() {
+    const apartments = parseFloat(document.getElementById("bd_apartments").value) || 0;
+    const comfort = parseFloat(document.getElementById("bd_comfort").value) || 0;
+    const peakPercent = parseFloat(document.getElementById("bd_peakReserve").value) || 0;
+    const circulationPercent = parseFloat(document.getElementById("bd_circulationReserve").value) || 0;
+    
+    const heatingPower = parseFloat(document.getElementById("bd_heatingPower").value) || 0;
+    const peakShareInput = document.getElementById("bd_peakShare").value;
+    const peakSharePercent = peakShareInput !== "" ? parseFloat(peakShareInput) : 80;
+    const peakDuration = parseFloat(document.getElementById("bd_peakDuration").value) || 0;
+
+    const base = apartments * comfort;
+    const peakReserve = base * (peakPercent / 100);
+    const circulationReserve = base * (circulationPercent / 100);
+    const totalStatVolume = base + peakReserve + circulationReserve;
+
+    let peakRequiredVolume = totalStatVolume;
+    let heatedVolume = 0;
+    let recommendedVolume = totalStatVolume;
+
+    if (heatingPower > 0) {
+        peakRequiredVolume = totalStatVolume * (peakSharePercent / 100);
+        heatedVolume = (heatingPower * peakDuration * 1000) / (1.163 * 40);
+        recommendedVolume = peakRequiredVolume - heatedVolume;
+        if (recommendedVolume < 0) recommendedVolume = 0;
+    }
+
+    document.getElementById("bd_baseNeed").innerHTML = Math.round(base) + " l/den";
+    document.getElementById("bd_statVolume").innerHTML = Math.round(totalStatVolume) + " l";
+    document.getElementById("bd_peakRequiredVolume").innerHTML = heatingPower > 0 ? Math.round(peakRequiredVolume) + " l" : "Neuplatňuje se (0 kW)";
+    document.getElementById("bd_heatedVolume").innerHTML = Math.round(heatedVolume) + " l";
+    document.getElementById("bd_tankVolume").innerHTML = Math.round(recommendedVolume) + " l";
+}
+
+function calculateRD() {
+    const persons = parseFloat(document.getElementById("rd_persons").value) || 0;
+    const showers = parseFloat(document.getElementById("rd_showers").value) || 0;
+    const baths = parseFloat(document.getElementById("rd_baths").value) || 0;
+    const comfort = parseFloat(document.getElementById("rd_comfort").value) || 0;
+
+    const base = persons * comfort;
+    const showerIncrease = base * 0.10 * showers;
+    const bathIncrease = base * 0.30 * baths;
+    const total = base + showerIncrease + bathIncrease;
+    const tankCalculated = total * 0.80;
+
+    let tank = tankCalculated;
+    if (tank < 200) {
+        tank = 200;
+    }
+
+    document.getElementById("rd_baseNeed").innerHTML = Math.round(base) + " l/den";
+    document.getElementById("rd_totalNeed").innerHTML = Math.round(total) + " l/den";
+    document.getElementById("rd_tankCalc").innerHTML = Math.round(tankCalculated) + " l";
+    document.getElementById("rd_tankSize").innerHTML = Math.round(tank) + " l";
+}
+
+function dn(d) {
+    if (d <= 15) return 'DN15';
+    if (d <= 20) return 'DN20';
+    if (d <= 25) return 'DN25';
+    if (d <= 32) return 'DN32';
+    if (d <= 40) return 'DN40';
+    if (d <= 50) return 'DN50';
+    if (d <= 65) return 'DN65';
+    return 'DN80+';
+}
+
+function pipe() {
+    const q = parseFloat(document.getElementById('flow').value) || 0;
+    const dt = parseFloat(document.getElementById('deltaT').value) || 0;
+    const v = parseFloat(document.getElementById('velocity').value) || 1;
+    const p = 1.163 * q * dt;
+    const d = Math.sqrt((4 * (q / 3600)) / (Math.PI * v)) * 1000;
+    document.getElementById('systemPower').innerHTML = fmt(p) + ' kW';
+    document.getElementById('pipeDiameter').innerHTML = fmt(d) + ' mm';
+    document.getElementById('pipeDN').innerHTML = dn(d);
+}
+
+function calculateMissing(m) {
+    let p = parseFloat(document.getElementById('calcPower').value) || 0;
+    let q = parseFloat(document.getElementById('calcFlow').value) || 0;
+    let dt = parseFloat(document.getElementById('calcDeltaT').value) || 0;
+
+    if (m === 'flow' && dt > 0) {
+        q = p / (1.163 * dt);
+        document.getElementById('calcFlow').value = q.toFixed(2);
+        document.getElementById('calcResult').innerHTML = 'Průtok ' + fmt(q) + ' m³/h';
+    }
+    if (m === 'power') {
+        p = 1.163 * q * dt;
+        document.getElementById('calcPower').value = p.toFixed(2);
+        document.getElementById('calcResult').innerHTML = 'Výkon ' + fmt(p) + ' kW';
+    }
+    if (m === 'dt' && q > 0) {
+        dt = p / (1.163 * q);
+        document.getElementById('calcDeltaT').value = dt.toFixed(2);
+        document.getElementById('calcResult').innerHTML = 'ΔT ' + fmt(dt) + ' K';
+    }
+}
+
+function buffer() {
+    const pNom = parseFloat(document.getElementById('bufferPower').value) || 0;
+    const type = document.getElementById('bufferType').value;
+    const r = parseFloat(document.getElementById('runtime').value) || 15;
+    const dt = parseFloat(document.getElementById('bufferDT').value) || 4;
+    const projVol = parseFloat(document.getElementById('projectedVolume').value) || 0;
+
+    const pMin = type === 'inverter' ? pNom * 0.30 : pNom;
+    const vCycle = (pMin * r * 14.33) / dt;
+    const vDefrost = pNom * 12;
+    const baseMin = Math.max(vCycle, vDefrost);
+    const recommended = baseMin * 1.20;
+
+    document.getElementById('antiCycleVolume').innerHTML = Math.round(vCycle) + ' l';
+    document.getElementById('defrostVolume').innerHTML = Math.round(vDefrost) + ' l';
+    document.getElementById('recommendedBufferVolume').innerHTML = Math.round(recommended) + ' l';
+
+    const statusDiv = document.getElementById('bufferStatus');
+    if (projVol > 0) {
+        if (projVol >= recommended) {
+            statusDiv.className = 'ok';
+            statusDiv.innerHTML = '✅ Návrh v dokumentaci VYHOVUJE (' + projVol + ' l ≥ doporučených ' + Math.round(recommended) + ' l s rezervou)';
+        } else if (projVol >= baseMin) {
+            statusDiv.className = 'warn';
+            statusDiv.innerHTML = '⚠️ Návrh v dokumentaci JE NA HRANICI MINIMA (' + projVol + ' l je pod doporučenými ' + Math.round(recommended) + ' l s rezervou, ale splňuje absolutní minimum ' + Math.round(baseMin) + ' l)';
+        } else {
+            statusDiv.className = 'warn';
+            statusDiv.innerHTML = '❌ Návrh v dokumentaci NEVYHOVUJE (' + projVol + ' l < kritické minimum ' + Math.round(baseMin) + ' l). Hrozí cyklování nebo problémy při defrostu!';
+        }
+    } else {
+        statusDiv.className = '';
+        statusDiv.innerHTML = '';
+    }
+}
+
+function cascade() {
+    const units = parseInt(document.getElementById('cascUnits').value) || 1;
+    const pUnit = parseFloat(document.getElementById('cascPowerPerUnit').value) || 0;
+    const type = document.getElementById('cascType').value;
+    const scenario = document.getElementById('cascCycleScenario').value;
+    const simultaneity = 0.60;
+    const dt = parseFloat(document.getElementById('cascDT').value) || 4;
+    const runtime = parseFloat(document.getElementById('cascRuntime').value) || 15;
+    const defrostFactor = parseFloat(document.getElementById('cascDefrostFactor').value) || 12;
+    const projVol = parseFloat(document.getElementById('cascProjectedVolume').value) || 0;
+
+    const totalPower = units * pUnit;
+    const minUnitPower = type === 'inverter' ? pUnit * 0.30 : pUnit;
+
+    let activeCyclePower = minUnitPower;
+    if (scenario === 'single_full') {
+        activeCyclePower = pUnit;
+    } else if (scenario === 'step_change') {
+        activeCyclePower = minUnitPower;
+    } else if (scenario === 'all_full') {
+        activeCyclePower = totalPower;
+    }
+
+    const vCycle = (activeCyclePower * runtime * 14.33) / dt;
+    const defrostPower = totalPower * simultaneity;
+    const vDefrost = defrostPower * defrostFactor;
+
+    const baseMin = Math.max(vCycle, vDefrost);
+    const recommended = baseMin * 1.20;
+
+    document.getElementById('cascTotalPower').innerHTML = fmt(totalPower) + ' kW';
+    document.getElementById('cascDefrostPower').innerHTML = fmt(defrostPower) + ' kW (60 %)';
+    document.getElementById('cascAntiCycleVol').innerHTML = Math.round(vCycle) + ' l';
+    document.getElementById('cascDefrostVol').innerHTML = Math.round(vDefrost) + ' l';
+    document.getElementById('cascRecommendedVol').innerHTML = Math.round(recommended) + ' l';
+
+    const statusDiv = document.getElementById('cascStatus');
+    if (projVol > 0) {
+        if (projVol >= recommended) {
+            statusDiv.className = 'ok';
+            statusDiv.innerHTML = '✅ Návrh kaskády VYHOVUJE (' + projVol + ' l ≥ doporučených ' + Math.round(recommended) + ' l s rezervou)';
+        } else if (projVol >= baseMin) {
+            statusDiv.className = 'warn';
+            statusDiv.innerHTML = '⚠️ Návrh kaskády JE NA HRANICI MINIMA (' + projVol + ' l je pod doporučenými ' + Math.round(recommended) + ' l s rezervou, ale splňuje absolutní minimum ' + Math.round(baseMin) + ' l)';
+        } else {
+            statusDiv.className = 'warn';
+            statusDiv.innerHTML = '❌ Návrh kaskády NEVYHOVUJE (' + projVol + ' l < kritické minimum ' + Math.round(baseMin) + ' l). Hrozí cyklování nebo problémy při odtávání!';
+        }
+    } else {
+        statusDiv.className = '';
+        statusDiv.innerHTML = '';
+    }
+}
+
+function allCalculations() {
+    coil();
+    calculateBD();
+    calculateRD();
+    pipe();
+    buffer();
+    cascade();
+}
+
+/* Funkce pro Správu Tisku */
+function openPrintModal() {
+    // Předvýběr aktuálně otevřené záložky v modal okně
+    const activeTabId = document.querySelector('.tab.active').id;
+    document.querySelectorAll('.print-list input').forEach(cb => {
+        cb.checked = (cb.value === activeTabId);
+    });
+    document.getElementById('printModal').style.display = 'flex';
+}
+
+function closePrintModal() {
+    document.getElementById('printModal').style.display = 'none';
+}
+
+function executePrint() {
+    const selectedTabs = Array.from(document.querySelectorAll('.print-list input:checked')).map(cb => cb.value);
+    
+    if (selectedTabs.length === 0) {
+        alert('Vyberte prosím alespoň jednu záložku k tisku.');
+        return;
+    }
+
+    // Označíme záložky pro tiskovou třídu
+    document.querySelectorAll('.tab').forEach(tab => {
+        if (selectedTabs.includes(tab.id)) {
+            tab.classList.add('print-show');
+        } else {
+            tab.classList.remove('print-show');
+        }
+    });
+
+    closePrintModal();
+    window.print();
+}
+
+document.querySelectorAll('input, select').forEach(i => i.addEventListener('input', allCalculations));
+allCalculations();
+</script>
+
+</body>
+</html>
